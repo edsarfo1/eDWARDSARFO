@@ -1,53 +1,93 @@
 import React from 'react';
 import {View, Text, TextInput, Button, Modal, StyleSheet} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SignUp = () => {
+const SignUpScreen = ({navigation}) => {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [verifyPassword, setVerifyPassword] = React.useState('');
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [successModalVisible, setSuccessModalVisible] = React.useState(false);
 
-  const handleSignUp = () => {
-    if (password !== verifyPassword) {
-      setModalVisible(true);
-    } else {
+  const SignupAuth = async (username, password) => {
+    try {
+      const users = await AsyncStorage.getItem('users');
+      const parsedUsers = JSON.parse(users) || [];
+
+      // Check if the user exists
+      const existingUser = parsedUsers.find(user => user.username === username);
+      if (existingUser) {
+        throw new Error('User already exists');
+      }
+
+      // Create  new user object
+      const newUser = {username, password, id: Date.now()};
+
+      // Update list of users
+      const updatedUsers = [...parsedUsers, newUser];
+
+      // Store updated list users array in asycn
+      await AsyncStorage.setItem('users', JSON.stringify(updatedUsers));
+
+      // Return new user
+      return newUser;
+    } catch (error) {
+      throw new Error('Failed to sign up');
     }
   };
 
+  const handleSignUp = async () => {
+    if (password !== verifyPassword) {
+      setModalVisible(true);
+    } else {
+      try {
+        const newUser = await SignupAuth(username, password);
+        setSuccessModalVisible(true);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+  const handleSuccessModal = () => {
+    setSuccessModalVisible(false);
+    navigation.navigate('Login');
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+    <View>
+      <Text>Sign Up</Text>
       <TextInput
-        style={styles.input}
         placeholder="Username"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
-        style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry={true}
       />
       <TextInput
-        style={styles.input}
         placeholder="Verify Password"
         value={verifyPassword}
         onChangeText={setVerifyPassword}
         secureTextEntry={true}
       />
       <Button title="Sign Up" onPress={handleSignUp} />
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}>
-        <View style={styles.modal}>
-          <Text style={styles.modalText}>Passwords must match!</Text>
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View>
+          <Text>Passwords must match!</Text>
           <Button title="OK" onPress={() => setModalVisible(false)} />
+        </View>
+      </Modal>
+      <Modal
+        visible={successModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setSuccessModalVisible(false)}>
+        <View style={styles.modal}>
+          <Text style={styles.modalText}>Successfully registered!</Text>
+          <Button title="OK" onPress={handleSuccessModal} />
         </View>
       </Modal>
     </View>
@@ -87,4 +127,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SignUp;
+export default SignUpScreen;
