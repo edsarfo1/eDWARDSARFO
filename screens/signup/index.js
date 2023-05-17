@@ -75,8 +75,8 @@ const SignUpScreen = ({navigation}) => {
       />
       <Button title="Sign Up" onPress={handleSignUp} />
       <Modal visible={modalVisible} transparent={true} animationType="slide">
-        <View>
-          <Text>Passwords must match!</Text>
+        <View style={styles.modal}>
+          <Text style={styles.modalText}>Passwords must match!</Text>
           <Button title="OK" onPress={() => setModalVisible(false)} />
         </View>
       </Modal>

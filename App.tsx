@@ -1,25 +1,35 @@
 import React from 'react';
-import Navigation from './containers/navigation';
-import {NavigationContainer} from '@react-navigation/native';
 import {Provider} from 'react-redux';
-import {store, persistor} from './src/store';
-
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import AuthNavigator from './containers/navigation/AuthNavigator';
+import {persistor, store} from './src/store';
 import {PersistGate} from 'redux-persist/integration/react';
+
+const Stack = createStackNavigator();
 
 const App = () => {
   const onBeforeLift = () => {
     // DataHelper.setStore(this.state.store.store);
     // setIsLoading(false);
   };
-
   return (
-    <NavigationContainer>
-      <Provider store={store}>
-        <PersistGate persistor={persistor} onBeforeLift={onBeforeLift}>
-          <Navigation />
-        </PersistGate>
-      </Provider>
-    </NavigationContainer>
+    <Provider store={store}>
+      <PersistGate
+        loading={null}
+        persistor={persistor}
+        onBeforeLift={onBeforeLift}>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen
+              name="Auth"
+              component={AuthNavigator}
+              options={{headerShown: false}}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </PersistGate>
+    </Provider>
   );
 };
 

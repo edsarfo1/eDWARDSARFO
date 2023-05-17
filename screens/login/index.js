@@ -1,6 +1,7 @@
 import React from 'react';
 import {View, Text, TextInput, Button, StyleSheet, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {login} from '../../containers/authentication/AuthService'; // Update the path accordingly
 import Dashboard from '../dashboard';
 
 const LoginScreen = ({navigation}) => {
@@ -9,28 +10,16 @@ const LoginScreen = ({navigation}) => {
 
   const handleLogin = async () => {
     try {
-      // get list ofusers from AsyncStorage
-      const users = await AsyncStorage.getItem('users');
-      console.log(users);
-      const parsedUsers = JSON.parse(users);
-      console.log(parsedUsers);
+      // Call the login function from AuthService with the entered username and password
+      const response = await login(username, password);
 
-      // Find the user with this username and password
-      const user = parsedUsers.find(
-        user => user.username === username && user.password === password,
-      );
-      console.log(user);
-
-      if (user) {
-        // If it exists, navigate to Dashboard
-        navigation.navigate('Dashboard');
-      } else {
-        // If not, show an error message
-        Alert.alert('Error', 'Invalid username or password');
-      }
+      // Handle successful login, e.g., navigate to the Dashboard screen
+      console.log('Logged in successfully:', response);
+      navigation.navigate('Dashboard');
     } catch (error) {
-      console.log(error);
-      Alert.alert('Error', 'Failed to login');
+      // Handle login error, e.g., show an error message
+      console.error('Login failed:', error);
+      Alert.alert('Error', 'Invalid username or password');
     }
   };
 
